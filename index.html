@@ -1,151 +1,534 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Growing Up Together: HDB &amp; SG (1965–2025)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-
-  <!-- Inline Straits‑Times‑style CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singapore Household Income Insights: Multi-Year Analysis</title>
+  <!-- Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
-    body { margin:0; font-family: "Helvetica Neue", Arial, sans-serif; color:#333; overflow-x:hidden; }
-    header {
-      position: fixed; top:0; width:100%; background:#fff; padding:1rem 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index:10;
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #f4f6f8; 
+      margin: 0; 
+      padding: 0 40px; 
+      color: #333; 
+      font-size: 0.95em; 
+      line-height: 1.5; 
     }
-    header h1 { margin:0; font-size:1.5rem; font-weight:400; }
-    #scroll-sections { position: relative; z-index:5; margin-top:4rem; }
-    section {
-      height:100vh; display:flex; align-items:center; justify-content:center;
-      font-size:2rem; text-align:center; padding:0 1rem;
+    header { 
+      background-color: #ffffff; 
+      padding: 20px; 
+      text-align: center; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
     }
-    section:nth-child(odd) { background:#f9f9f9; }
-    section:nth-child(even) { background:#fff; }
-    section span { display:block; font-size:1.25rem; color:#666; margin-top:.5rem; }
-    canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+    header img { max-height: 60px; }
+    h1 { 
+      text-align: center; 
+      margin-top: 30px; 
+      font-size: 2.5em; 
+      font-weight: 800; 
+    }
+    h2, h3 { 
+      font-weight: 700; 
+      color: #333; 
+    }
+    p { margin: 10px 0; }
+    .container-text { 
+      background-color: white; 
+      border-radius: 20px; 
+      padding: 40px; 
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); 
+      margin: 50px auto; 
+      max-width: 1300px; 
+    }
+    .container-chart { 
+      background-color: white; 
+      border-radius: 20px; 
+      padding: 40px; 
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); 
+      margin: 30px auto; 
+      text-align: center; 
+      max-width: 1300px;
+    }
+    canvas { width: 100% !important; height: auto !important; }
+    footer { 
+      text-align: center; 
+      padding: 20px; 
+      background-color: #ffffff; 
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05); 
+      margin-top: 50px; 
+    }
+    .filter-container { 
+      margin: 20px 0; 
+      text-align: center; 
+      display: flex; 
+      justify-content: center; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+    }
+    select { 
+      padding: 6px 14px; 
+      border-radius: 8px; 
+      border: 1px solid #aaa; 
+      background-color: #fff; 
+      color: #333; 
+      font-weight: 500; 
+      cursor: pointer; 
+      font-size: 0.9em; 
+      transition: border 0.2s; 
+    }
+    select:hover { border-color: #3498db; }
+    label { 
+      font-weight: 600; 
+      margin-right: 4px; 
+      font-size: 0.9em; 
+    }
   </style>
 </head>
-
 <body>
   <header>
-    <h1>Growing Up Together: HDB &amp; SG <small>(1965–2025)</small></h1>
+    <img src="https://www.sutd.edu.sg/wp-content/uploads/2024/10/SUTDLogo_Dark@2x.png" alt="SUTD Logo" />
   </header>
 
-  <div id="scroll-sections">
-    <section data-decade="1965">
-      1965: The First HDB Estates
-      <span>From kampongs to concrete blocks</span>
-    </section>
-    <section data-decade="1975">
-      1975: Building a Nation
-      <span>New Towns and community planning</span>
-    </section>
-    <section data-decade="1985">
-      1985: MRT &amp; Town Centres
-      <span>Mass transit meets mass housing</span>
-    </section>
-    <section data-decade="1995">
-      1995: Executive &amp; Mixed-Use
-      <span>Decentralisation and diversity</span>
-    </section>
-    <section data-decade="2005">
-      2005: Punggol 21 &amp; BTO
-      <span>The rise of lifestyle estates</span>
-    </section>
-    <section data-decade="2015">
-      2015: Smart &amp; Green Towns
-      <span>Technology and nature in harmony</span>
-    </section>
-    <section data-decade="2025">
-      2025: Ageing‑in‑Place &amp; Beyond
-      <span>The next chapter of community design</span>
-    </section>
+  <h1>Singapore Household Income Insights: Multi-Year Analysis</h1>
+
+  <div class="container-text">
+    <h2>Hypothesis</h2>
+    <p>Different dwelling types show distinct income patterns across household sizes, with larger households and more expensive dwelling types showing higher average incomes.</p>
+    <p>1. The insights from the data visualization leads to further research on ratio of earning persons of households.</p>
+    <p>2. The insights intricate the social strata differences of people living in HDB Flats and private properties.</p>
+
+    <h2>Dataset</h2>
+    <ul>
+      <li>Household Size, Average Monthly Income, and Dwelling Unit Type from Household Expenditure Surveys (2002/03, 2007/08, 2012/13, 2017/18).</li>
+    </ul>
+    <p>View Source: <a href="https://data.gov.sg/datasets?query=Resident+Households+by+Monthly+Household+Income+and+Household+Size&page=1&resultId=d_db9775ba34e16e1d66400cba94f8a574" target="_blank">Resident Households by Monthly Household Income and Household Size by Year</a></p>
+    <p>View Source: <a href="https://data.gov.sg/datasets?query=Average+Monthly+Household+Income+Among+Resident+Households+by+Household+Size+and+Type+of+Dwelling&page=1&resultId=d_b5619276fd420e5e5701bf9a3b081e1a" target="_blank">Average Monthly Household Income Among Resident Households by Household Size and Type of Dwelling by Year</a></p>
+
+    <h2>Visualization</h2>
+    <p>
+      Use the filters below to choose the X axis, Y axis, and how the data points are grouped.
+      The X and Y filters initially list all three options.
+      The Points filter lets you choose whether to group the data by "Dwelling Unit Type" or "Household Size".
+      When you change any filter, the others update automatically so that no two filters share the same value.
+    </p>
   </div>
 
-  <!-- Three.js Canvas -->
-  <canvas id="three-canvas"></canvas>
+  <div class="container-chart">
+    <div class="filter-container">
+      <div>
+        <label for="yearFilter">Year:</label>
+        <select id="yearFilter"></select>
+      </div>
+      <div>
+        <label for="xAxisSelect">X:</label>
+        <select id="xAxisSelect"></select>
+      </div>
+      <div>
+        <label for="yAxisSelect">Y:</label>
+        <select id="yAxisSelect"></select>
+      </div>
+      <div>
+        <label for="pointCategory">Points:</label>
+        <select id="pointCategory">
+          <option value="Dwelling Unit Type">Dwelling Unit Type</option>
+          <option value="Household Size">Household Size</option>
+        </select>
+      </div>
+    </div>
+    <canvas id="combinedChart"></canvas>
+  </div>
 
-  <!-- External Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <div class="container-text">
+    <h2>Key Insights</h2>
+    <ul>
+      <li>The range of average monthly incomes has increased steadily over the years; a comparison between the 2002/23 survey and the 2017/18 survey clearly shows a significant escalation in income levels.</li>
+      <li>It is generally observed that larger households tend to report higher monthly incomes, although this is not a consistent trend across all cases.</li>
+      <li>When examining the data for HDB flats, the income trend does not follow a strongly exponential pattern compared to that observed in private properties.</li>
+      <li>In the case of private properties, there are notable fluctuations in monthly income as the household size increases.</li>
+      <li>By filtering the graph according to household size, we can effectively compare monthly incomes across different household sizes and types of dwelling units.</li>
+      <li>The variation in monthly income among different household sizes is relatively minor in HDB flats, whereas private properties exhibit a more diverse range - particularly, condominiums tend to show significant differences for households with five or more members, and landed properties for those with three to four members.</li>
+      <li>These observations suggest a potential area of study: exploring the ratio of earning household members across different types of properties.</li>
+      <li>Focusing again on dwelling unit types, the data indicates that moving into private properties, which is often considered a status symbol in Singapore, is associated with a marked increase in income over the years.</li>
+      <li>Moreover, the gap in monthly incomes between HDB flats and private properties becomes more pronounced with larger household sizes, displaying a more exponential divergence.</li>
+      <li>Adding more data on the ratio of earning household members could provide further insights into the observed income differences, helping to deepen our understanding of income distribution across various dwelling types.</li>
+    </ul>
+  </div>
+  
+  <footer>
+    <p>Data retrieved from <a href="https://data.gov.sg/" target="_blank">data.gov.sg</a></p>
+    <p>Ravi Prudhvi Naga Sai Kumar - 1009460</p>
+    <p>Master of Science in Urban Science, Policy and Planning</p>
+  </footer>
 
-  <!-- Inline JS to load & animate your GeoJSON -->
+  <!-- Embedded CSV data -->
+  <script type="text/plain" id="csvData">
+Year,Household Size,Average Monthly Income,Dwelling Unit Type
+2002/03,1,736,1-2 Room HDB Flats
+2002/03,2,1278,1-2 Room HDB Flats
+2002/03,3,2136,1-2 Room HDB Flats
+2002/03,4,1955,1-2 Room HDB Flats
+2002/03,5,3167,1-2 Room HDB Flats
+2002/03,1,2173,3 Room HDB Flats
+2002/03,2,2718,3 Room HDB Flats
+2002/03,3,3406,3 Room HDB Flats
+2002/03,4,4164,3 Room HDB Flats
+2002/03,5,4256,3 Room HDB Flats
+2002/03,1,2207,4 Room HDB Flats
+2002/03,2,4017,4 Room HDB Flats
+2002/03,3,4225,4 Room HDB Flats
+2002/03,4,4996,4 Room HDB Flats
+2002/03,5,5264,4 Room HDB Flats
+2002/03,1,3071,5 Room & Executive HDB Flats
+2002/03,2,6467,5 Room & Executive HDB Flats
+2002/03,3,6800,5 Room & Executive HDB Flats
+2002/03,4,6909,5 Room & Executive HDB Flats
+2002/03,5,7617,5 Room & Executive HDB Flats
+2002/03,1,6873,Condominiums & Other Apartments
+2002/03,2,10925,Condominiums & Other Apartments
+2002/03,3,11268,Condominiums & Other Apartments
+2002/03,4,13893,Condominiums & Other Apartments
+2002/03,5,15856,Condominiums & Other Apartments
+2002/03,1,5960,Landed Properties
+2002/03,2,10104,Landed Properties
+2002/03,3,16423,Landed Properties
+2002/03,4,13115,Landed Properties
+2002/03,5,17641,Landed Properties
+2007/08,1,706,1-2 Room HDB Flats
+2007/08,2,1158,1-2 Room HDB Flats
+2007/08,3,2836,1-2 Room HDB Flats
+2007/08,4,2763,1-2 Room HDB Flats
+2007/08,5,2720,1-2 Room HDB Flats
+2007/08,1,2349,3 Room HDB Flats
+2007/08,2,3068,3 Room HDB Flats
+2007/08,3,4550,3 Room HDB Flats
+2007/08,4,5454,3 Room HDB Flats
+2007/08,5,5568,3 Room HDB Flats
+2007/08,1,2846,4 Room HDB Flats
+2007/08,2,4600,4 Room HDB Flats
+2007/08,3,5683,4 Room HDB Flats
+2007/08,4,6418,4 Room HDB Flats
+2007/08,5,6410,4 Room HDB Flats
+2007/08,1,4054,5 Room & Executive HDB Flats
+2007/08,2,7948,5 Room & Executive HDB Flats
+2007/08,3,7715,5 Room & Executive HDB Flats
+2007/08,4,9172,5 Room & Executive HDB Flats
+2007/08,5,10487,5 Room & Executive HDB Flats
+2007/08,1,9336,Condominiums & Other Apartments
+2007/08,2,15055,Condominiums & Other Apartments
+2007/08,3,16392,Condominiums & Other Apartments
+2007/08,4,19717,Condominiums & Other Apartments
+2007/08,5,20515,Condominiums & Other Apartments
+2007/08,1,2914,Landed Properties
+2007/08,2,9967,Landed Properties
+2007/08,3,11606,Landed Properties
+2007/08,4,21944,Landed Properties
+2007/08,5,25174,Landed Properties
+2012/13,1,1065,1-2 Room HDB Flats
+2012/13,2,1911,1-2 Room HDB Flats
+2012/13,3,2575,1-2 Room HDB Flats
+2012/13,4,2985,1-2 Room HDB Flats
+2012/13,5,3372,1-2 Room HDB Flats
+2012/13,1,3054,3 Room HDB Flats
+2012/13,2,4463,3 Room HDB Flats
+2012/13,3,5450,3 Room HDB Flats
+2012/13,4,7194,3 Room HDB Flats
+2012/13,5,7065,3 Room HDB Flats
+2012/13,1,4531,4 Room HDB Flats
+2012/13,2,6039,4 Room HDB Flats
+2012/13,3,7728,4 Room HDB Flats
+2012/13,4,8863,4 Room HDB Flats
+2012/13,5,9356,4 Room HDB Flats
+2012/13,1,5345,5 Room & Executive HDB Flats
+2012/13,2,8369,5 Room & Executive HDB Flats
+2012/13,3,10065,5 Room & Executive HDB Flats
+2012/13,4,11637,5 Room & Executive HDB Flats
+2012/13,5,12384,5 Room & Executive HDB Flats
+2012/13,1,14333,Condominiums & Other Apartments
+2012/13,2,16152,Condominiums & Other Apartments
+2012/13,3,19001,Condominiums & Other Apartments
+2012/13,4,23779,Condominiums & Other Apartments
+2012/13,5,24410,Condominiums & Other Apartments
+2012/13,1,8881,Landed Properties
+2012/13,2,9794,Landed Properties
+2012/13,3,16452,Landed Properties
+2012/13,4,25639,Landed Properties
+2012/13,5,37221,Landed Properties
+2017/18,1,1533,1-2 Room HDB Flats
+2017/18,2,2676,1-2 Room HDB Flats
+2017/18,3,3212,1-2 Room HDB Flats
+2017/18,4,4059,1-2 Room HDB Flats
+2017/18,5,3771,1-2 Room HDB Flats
+2017/18,1,3954,3 Room HDB Flats
+2017/18,2,5064,3 Room HDB Flats
+2017/18,3,6669,3 Room HDB Flats
+2017/18,4,8091,3 Room HDB Flats
+2017/18,5,9671,3 Room HDB Flats
+2017/18,1,4552,4 Room HDB Flats
+2017/18,2,6798,4 Room HDB Flats
+2017/18,3,9070,4 Room HDB Flats
+2017/18,4,10493,4 Room HDB Flats
+2017/18,5,11134,4 Room HDB Flats
+2017/18,1,5843,5 Room & Executive HDB Flats
+2017/18,2,8936,5 Room & Executive HDB Flats
+2017/18,3,11243,5 Room & Executive HDB Flats
+2017/18,4,13356,5 Room & Executive HDB Flats
+2017/18,5,14936,5 Room & Executive HDB Flats
+2017/18,1,13265,Condominiums & Other Apartments
+2017/18,2,18363,Condominiums & Other Apartments
+2017/18,3,19338,Condominiums & Other Apartments
+2017/18,4,23461,Condominiums & Other Apartments
+2017/18,5,26365,Condominiums & Other Apartments
+2017/18,1,6161,Landed Properties
+2017/18,2,12826,Landed Properties
+2017/18,3,17973,Landed Properties
+2017/18,4,33478,Landed Properties
+2017/18,5,40790,Landed Properties
+2002/03,6 or more,4182,1-2 Room HDB Flats
+2002/03,6 or more,4958,3 Room HDB Flats
+2002/03,6 or more,5525,4 Room HDB Flats
+2002/03,6 or more,8170,5 Room & Executive HDB Flats
+2002/03,6 or more,19010,Condominiums & Other Apartments
+2002/03,6 or more,22504,Landed Properties
+2007/08,6 or more,3582,1-2 Room HDB Flats
+2007/08,6 or more,5311,3 Room HDB Flats
+2007/08,6 or more,6718,4 Room HDB Flats
+2007/08,6 or more,10990,5 Room & Executive HDB Flats
+2007/08,6 or more,18888,Condominiums & Other Apartments
+2007/08,6 or more,32441,Landed Properties
+2012/13,6 or more,2907,1-2 Room HDB Flats
+2012/13,6 or more,8051,3 Room HDB Flats
+2012/13,6 or more,10645,4 Room HDB Flats
+2012/13,6 or more,14000,5 Room & Executive HDB Flats
+2012/13,6 or more,26890,Condominiums & Other Apartments
+2012/13,6 or more,35207,Landed Properties
+2017/18,6 or more,3489,1-2 Room HDB Flats
+2017/18,6 or more,8217,3 Room HDB Flats
+2017/18,6 or more,12166,4 Room HDB Flats
+2017/18,6 or more,16015,5 Room & Executive HDB Flats
+2017/18,6 or more,44344,Condominiums & Other Apartments
+2017/18,6 or more,37135,Landed Properties
+  </script>
+
   <script>
-    // --- Scene Setup ---
-    const canvas = document.getElementById("three-canvas");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Global data: each year’s data is stored as an array of objects.
+    // Each object has keys: "Household Size", "Average Monthly Income", "Dwelling Unit Type".
+    let data = {};
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000);
-    camera.position.set(0, 300, 600);
+    // Allowed options for axes (all three) and for point grouping (only two).
+    const axisOptions = ["Household Size", "Average Monthly Income", "Dwelling Unit Type"];
+    const pointAllowed = ["Dwelling Unit Type", "Household Size"];
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.5);
-    dir.position.set(0,1,1);
-    scene.add(dir);
-
-    // --- Load GeoJSON & create blocks ---
-    fetch("data/hdb_blocks.geojson")
-      .then(res => res.json())
-      .then(data => {
-        const material = new THREE.MeshBasicMaterial({ color: 0x0066cc });
-        data.features.forEach(f => {
-          const [lon, lat] = f.geometry.coordinates;
-          const year = f.properties.year_completed;
-          // Simple equirectangular projection & scale
-          const x = (lon - 103.8) * 10000;
-          const z = (lat - 1.25) * 10000;
-          const height = 5 + ((year - 1965) / 60) * 100; 
-          const geom = new THREE.BoxGeometry(50, height, 50);
-          const mesh = new THREE.Mesh(geom, material);
-          mesh.position.set(x, height/2, z);
-          mesh.userData = { year };
-          mesh.scale.y = 0.01;            // start collapsed
-          mesh.visible = false;
-          scene.add(mesh);
-        });
-        initScroll(); animate();
-      });
-
-    // --- ScrollAnimation ---
-    function initScroll(){
-      gsap.registerPlugin(ScrollTrigger);
-      const decades = [1965,1975,1985,1995,2005,2015,2025];
-      decades.forEach(dec => {
-        ScrollTrigger.create({
-          trigger: `section[data-decade="${dec}"]`,
-          start: "top center",
-          onEnter: () => revealUpTo(dec),
-          onEnterBack: () => revealUpTo(dec)
+    // Parse CSV data and store rows by year.
+    function loadCSVData() {
+      const csvText = document.getElementById('csvData').textContent.trim();
+      const results = Papa.parse(csvText, { header: true });
+      const rows = results.data;
+      data = {};
+      rows.forEach(row => {
+        const year = row["Year"];
+        if (!data[year]) data[year] = [];
+        data[year].push({
+          "Household Size": row["Household Size"],
+          "Average Monthly Income": row["Average Monthly Income"],
+          "Dwelling Unit Type": row["Dwelling Unit Type"]
         });
       });
+      // Populate the year filter.
+      const yearFilter = document.getElementById('yearFilter');
+      yearFilter.innerHTML = '';
+      Object.keys(data).sort().forEach(year => {
+        const opt = document.createElement('option');
+        opt.value = year;
+        opt.text = year;
+        yearFilter.appendChild(opt);
+      });
+      updateChart();
     }
 
-    function revealUpTo(year){
-      scene.children.forEach(obj => {
-        if (obj.userData && obj.userData.year <= year) {
-          obj.visible = true;
-          gsap.to(obj.scale, { y:1, duration:1, ease:"power2.out" });
-        } else if (obj.userData) {
-          gsap.to(obj.scale, { y:0.01, duration:0.5, ease:"power2.in", onComplete:() => obj.visible = false });
+    // Populate the X and Y axis selectors with all three options.
+    function populateAxisSelectors() {
+      const xAxisSelect = document.getElementById('xAxisSelect');
+      const yAxisSelect = document.getElementById('yAxisSelect');
+      xAxisSelect.innerHTML = '';
+      yAxisSelect.innerHTML = '';
+      axisOptions.forEach(option => {
+        let optX = document.createElement('option');
+        optX.value = option;
+        optX.text = option;
+        xAxisSelect.appendChild(optX);
+        let optY = document.createElement('option');
+        optY.value = option;
+        optY.text = option;
+        yAxisSelect.appendChild(optY);
+      });
+      // Set default selections.
+      xAxisSelect.value = "Household Size";
+      yAxisSelect.value = "Average Monthly Income";
+    }
+
+    // Helper: if the selected key is numeric, convert the value.
+    function getAxisValue(point, key) {
+      const val = point[key];
+      if (key === "Household Size" || key === "Average Monthly Income") {
+        const num = parseFloat(val);
+        return isNaN(num) ? val : num;
+      }
+      return val;
+    }
+
+    // Determine scale type: if key is "Dwelling Unit Type", use category; else, linear.
+    function getScaleType(key) {
+      return (key === "Dwelling Unit Type") ? 'category' : 'linear';
+    }
+
+    // Synchronize all three filters so that none duplicate.
+    function syncFilters(changed) {
+      const pointSelect = document.getElementById('pointCategory');
+      const xSelect = document.getElementById('xAxisSelect');
+      const ySelect = document.getElementById('yAxisSelect');
+      
+      // Current selections.
+      let pointVal = pointSelect.value;
+      let xVal = xSelect.value;
+      let yVal = ySelect.value;
+      
+      // For mutual exclusion:
+      // The point filter can only be one of the two allowed options.
+      // The x and y filters must come from the full axisOptions but must not equal the point selection or each other.
+      if (xVal === pointVal) {
+        // Set x to the first axis option that is not pointVal and not equal to yVal.
+        for (let opt of axisOptions) {
+          if (opt !== pointVal && opt !== yVal) {
+            xVal = opt;
+            break;
+          }
+        }
+        xSelect.value = xVal;
+      }
+      if (yVal === pointVal || yVal === xVal) {
+        // Set y to the first axis option that is not pointVal and not equal to xVal.
+        for (let opt of axisOptions) {
+          if (opt !== pointVal && opt !== xVal) {
+            yVal = opt;
+            break;
+          }
+        }
+        ySelect.value = yVal;
+      }
+      
+      // Now update the available options in the X and Y selects so they do not include the point filter value.
+      xSelect.innerHTML = '';
+      axisOptions.forEach(opt => {
+        if (opt !== pointVal) {
+          let optionElem = document.createElement('option');
+          optionElem.value = opt;
+          optionElem.text = opt;
+          xSelect.appendChild(optionElem);
+        }
+      });
+      xSelect.value = xVal;
+      
+      ySelect.innerHTML = '';
+      axisOptions.forEach(opt => {
+        if (opt !== pointVal) {
+          let optionElem = document.createElement('option');
+          optionElem.value = opt;
+          optionElem.text = opt;
+          ySelect.appendChild(optionElem);
+        }
+      });
+      ySelect.value = yVal;
+      
+      // Finally, if for some reason the point selection conflicts (i.e. equals x or y), update it.
+      if (xVal === pointVal || yVal === pointVal) {
+        for (let opt of pointAllowed) {
+          if (opt !== xVal && opt !== yVal) {
+            pointVal = opt;
+            break;
+          }
+        }
+        pointSelect.value = pointVal;
+      }
+    }
+
+    let combinedChart;
+    // Update the chart based on current filters.
+    function updateChart() {
+      // First, synchronize filters.
+      syncFilters();
+      
+      const year = document.getElementById('yearFilter').value;
+      const xKey = document.getElementById('xAxisSelect').value;
+      const yKey = document.getElementById('yAxisSelect').value;
+      const pointGroup = document.getElementById('pointCategory').value;
+      const yearData = data[year];
+      if (!yearData) return;
+      
+      // Group data by the selected points filter.
+      let groupedData = {};
+      yearData.forEach(point => {
+        const key = point[pointGroup];
+        if (!groupedData[key]) groupedData[key] = [];
+        // Only add if there isn’t already a point with the same x and y (for the selected axes).
+        if (!groupedData[key].some(existing => existing[xKey] === point[xKey] && existing[yKey] === point[yKey])) {
+          groupedData[key].push(point);
+        }
+      });
+      
+      // Prepare datasets.
+      const datasets = Object.entries(groupedData).map(([group, points]) => ({
+        label: group,
+        data: points.map(p => ({
+          x: getAxisValue(p, xKey),
+          y: getAxisValue(p, yKey)
+        })),
+        showLine: true,
+        borderWidth: 2,
+        pointRadius: 6,
+        tension: 0.3
+      }));
+      
+      if (combinedChart) combinedChart.destroy();
+      combinedChart = new Chart(document.getElementById('combinedChart'), {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+          plugins: {
+            title: { display: true, text: `Chart for ${year} (Grouped by ${pointGroup})` },
+            legend: { position: 'bottom' }
+          },
+          scales: {
+            x: { 
+              type: getScaleType(xKey), 
+              title: { display: true, text: xKey },
+              ticks: xKey === "Household Size" ? { stepSize: 1, callback: (value) => Math.floor(value) } : {}
+            },
+            y: { 
+              type: getScaleType(yKey), 
+              title: { display: true, text: yKey },
+              ticks: yKey === "Household Size" ? { stepSize: 1, callback: (value) => Math.floor(value) } : {}
+            }
+          }
         }
       });
     }
 
-    // --- Render Loop ---
-    function animate(){
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
+    // Initialization on window load.
+    window.onload = () => {
+      populateAxisSelectors();
+      loadCSVData();
+    };
 
-    // --- Handle Resize ---
-    window.addEventListener("resize", () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      renderer.setSize(w,h);
-      camera.aspect = w/h;
-      camera.updateProjectionMatrix();
-    });
+    // Add event listeners on each filter.
+    document.getElementById('yearFilter').addEventListener('change', updateChart);
+    document.getElementById('xAxisSelect').addEventListener('change', updateChart);
+    document.getElementById('yAxisSelect').addEventListener('change', updateChart);
+    document.getElementById('pointCategory').addEventListener('change', updateChart);
   </script>
 </body>
 </html>
